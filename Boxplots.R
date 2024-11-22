@@ -1,0 +1,13 @@
+silownia <- read.csv("silownia_new.csv")
+
+boxplot(silownia$Weight..kg., main = "silownia$Weight..kg.")
+boxplot(silownia$Height..m., main = "silownia$Height..kg.")
+boxplot(silownia$Max_BPM, main = "silownia$Max_BPM")
+boxplot(silownia$Avg_BPM, main = "silownia$Avg_BPM")
+boxplot(silownia$Resting_BPM, main = "silownia$Resting_BPM")
+boxplot(silownia$Session_Duration..hours., main = "silownia$Session_Duration..hours.")
+boxplot(silownia$Calories_Burned, main = "silownia$Calories_Burned")
+boxplot(silownia$Fat_Percentage, main = "silownia$Fat_Percentage")
+boxplot(silownia$Water_Intake..liters., main = "silownia$Water_Intake..liters.")
+boxplot(silownia$Workout_Frequency..days.week., main = "silownia$Workout_Frequency..days.week.")
+boxplot(silownia$Experience_Level, main = "silownia$Experience_Level")
