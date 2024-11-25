@@ -1,3 +1,5 @@
+library(tidyverse)
+library(readr)
 silownia <- read_csv("silownia_new.csv")
 
 
