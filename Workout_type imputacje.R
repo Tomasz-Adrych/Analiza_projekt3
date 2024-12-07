@@ -71,7 +71,7 @@ dane_rpart$Workout_Type <- as.factor(dane_rpart$Workout_Type)
 #Sprawdzenie
 summary(dane_rpart$Workout_Type)
 
-
+####################################################
 #Sprawdzenie, która z metod lepiej przewidziała NA
 podstawowe <- round((table(silownia$Workout_Type) / sum(table(silownia$Workout_Type))) * 100, digits = 2)
 imput_mice <- round((table(dane_mice$Workout_Type) / sum(table(dane_mice$Workout_Type))) * 100, digits = 2)
