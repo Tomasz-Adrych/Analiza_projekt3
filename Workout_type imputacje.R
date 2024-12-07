@@ -1,5 +1,7 @@
 install.packages("mice")
 library(mice)
+install.packages("rpart")
+library(rpart)
 
 #Wczytanie danych
 silownia <- read.csv("silownia_new.csv")
@@ -24,26 +26,63 @@ logit <- glm(as.factor(Workout_Type) ~ .,
              data = silownia_puste, family = binomial)
 summary(logit)
 
-#Imputacja modelami łańcuchowymi
-silownia$Workout_Type <- as.factor(silownia$Workout_Type)
+#Dane do obliczeń; bez zmiennych Agei i BMI zawierających braki
+robocze <- silownia[, 2:14]
+
+#Zmienna Workout_type jako factor
+robocze$Workout_Type <- as.factor(robocze$Workout_Type)
+
+#####################################################
+#Wielowymiarowe wypełnianie przez równania łańcuchowe 
 
 #Tworzenie macierzy zmiennych wykorzystywanych do imputacji
-#Pominięto zmienne Age i BMI, które również zawierały NA
-przyklad <- make.predictorMatrix(silownia)
-
-przyklad[, c("Age", "BMI")] <- 0
-przyklad[c("Age", "BMI"), ] <- 0
-
 #Wybór zmiennej Workout_type jako tej, która ma zostać uzupełniona
-wybrana_zmienna <- is.na(silownia)
-wybrana_zmienna[, colnames(silownia) != "Workout_Type"] <- FALSE
+wybrana_zmienna <- is.na(robocze)
 
 #Imputacja danych
-wynik <- mice(silownia, predictorMatrix = przyklad, where = wybrana_zmienna)
+wynik <- mice(robocze, where = wybrana_zmienna)
 
 #Podstawienie uzupełnionej zmiennej do zbioru danych
-uzupelnione_dane <- complete(wynik)
-silownia$Workout_Type <- uzupelnione_dane$Workout_Type
+dane_mice <- complete(wynik)
 
 #Sprawdzenie
-summary(silownia)
+summary(dane_mice$Workout_Type)
+
+########################################
+#RPART - drzewa losowe – klasyfikacyjne
+
+#Wyszczególnienie braków i danych do stworzenia drzewa decyzyjnego
+dane_pelne <- robocze[!is.na(robocze$Workout_Type), ]
+braki <- robocze[is.na(robocze$Workout_Type), ]
+
+# Model drzewa decyzyjnego
+model <- rpart(Workout_Type ~ ., data = dane_pelne, method = "class")
+
+# Przewidywanie brakujących wartości
+braki$Workout_Type <- predict(model, braki, type = "class")
+
+#Podstawienie uzupełnionej zmiennej do zbioru danych
+dane_rpart <- robocze
+dane_rpart$Workout_Type <- ifelse(is.na(robocze$Workout_Type) == TRUE, braki$Workout_Type, robocze$Workout_Type)
+
+#Zmienna Workout_type jako factor
+dane_rpart$Workout_Type <- as.factor(dane_rpart$Workout_Type)
+
+#Sprawdzenie
+summary(dane_rpart$Workout_Type)
+
+
+#Sprawdzenie, która z metod lepiej przewidziała NA
+podstawowe <- round((table(silownia$Workout_Type) / sum(table(silownia$Workout_Type))) * 100, digits = 2)
+imput_mice <- round((table(dane_mice$Workout_Type) / sum(table(dane_mice$Workout_Type))) * 100, digits = 2)
+imput_rbind <- round((table(dane_rpart$Workout_Type) / sum(table(dane_rpart$Workout_Type))) * 100, digits = 2)
+
+tabela <- cbind(podstawowe, imput_mice, imput_rbind)
+
+
+
+
+
+
+
+
