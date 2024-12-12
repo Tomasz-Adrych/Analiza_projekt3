@@ -64,7 +64,7 @@ boxplot(silownia$experience_level, main = "silownia$experience_level")
 library(tidyverse)
 library(dlookr)
  
-#Imputacja NA dla zmiennej age
+#Imputacja NA dla zmiennej Age
 age1 <- round (imputate_na(silownia, age, gender, method = "rpart"))
  summary(age1)
 
@@ -74,5 +74,22 @@ silownia <- replace_na(data.frame(silownia, age1))
 silownia <- silownia %>% 
   mutate(age = age1) %>%
     select(-age1)
+
+#Imputacja NA dla zmiennej BMI
+silownia <- silownia %>%
+  mutate(
+    bmi = if_else(
+      is.na(bmi),                                                
+      silownia$weight_kg / (silownia$height_m^2),        
+      bmi                                                        
+      
+    )
+  )
+# zaokrąglam do 2 miejsc po przecinku 
+silownia <- silownia %>%
+  mutate(bmi = round(bmi, 2))
+
+#Imputacja NA dla zmiennej Workout_Type
+
 
 ```
