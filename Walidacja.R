@@ -57,15 +57,15 @@ zasady <- validator(
   , resting_bpm >= 30 & resting_bpm <= 100
   , session_duration_hours > 0 & session_duration_hours < 24
   , workout_type == c(1,2,3,4)
-  , if (workout_type == 3)  Calories_Burned <= 500 * (session_duration_hours / 2)  ,
-   if (workout_type == 4)  Calories_Burned <= 500 * (session_duration_hours)  , 
-   if (workout_type == 2)  Calories_Burned <= 500 * (session_duration_hours / 2)  ,
-   if (workout_type == 1)  Calories_Burned <= 300 * (session_duration_hours)  ,
+  , if (workout_type == 3) { Calories_Burned <= 500 * (session_duration_hours / 2) } ,
+   if (workout_type == 4)  { Calories_Burned <= 500 * (session_duration_hours) } , 
+   if (workout_type == 2)  { Calories_Burned <= 500 * (session_duration_hours / 2) } ,
+   if (workout_type == 1)   Calories_Burned <=  300 * (session_duration_hours)  ,
    if (gender == 0) fat_percentage >= 6
   ,if (gender == 1) fat_percentage >= 12
   , water_intake_liters <= 5
   )
-?validator
+
 out <- confront(silownia, zasady)
 
 summary(out)
