@@ -36,15 +36,33 @@ library(tidyverse)
 library(validate)
 library(readr)
 
-silownia_new <- read_csv("silownia_new.csv")
+silownia <- read_csv("silownia_new.csv")
+
+silownia$Gender <- ifelse (silownia$Gender == "Male", 0, 
+                           ifelse(silownia$Gender == "Female", 1, 2))
+
+silownia$Workout_Type <- ifelse (silownia$Workout_Type == "Strength", 1, 
+                                 ifelse(silownia$Workout_Type == "HIIT", 2, 
+                                        ifelse(silownia$Workout_Type == "Cardio", 3,
+                                               ifelse(silownia$Workout_Type == "Yoga", 4, 5))))
+
 
 zasady <- validator(
   Age >= 18 & age <= 100
   , Weight >= 35 & Weight <= 200
   , Height >= 1 & Height <= 2
-  , Max_BPM >= 30 & Max_BPM = 220 - Age
+  , Max_BPM >= 30 & Max_BPM == 220 - Age
   , Resting_BPM >= 30 & Resting_BPM <= 100
   , Session_Duration > 0 & Session_Duration < 24
-  , 
+  , if (Workout_Type == 3) Calories_Burned <= 500 * (Session_Duration / 2),
+    if (Workout_Type == 4) Calories_Burned <= 500 * (Session_Duration),
+    if (Workout_Type == 2) Calories_Burned <= 500 * (Session_Duration / 2),
+    if (Workout_Type == 1) Calories_Burned <= 300 * (Session_Duration)
+  , if (Gender == 0) Fat_Percentage >= 6
+  , if (Gender == 1) Fat_Percentage >= 12
+  , Water_Intake <= 5
 )
 
+out <- confront(silownia, zasady)
+
+summary(out)
