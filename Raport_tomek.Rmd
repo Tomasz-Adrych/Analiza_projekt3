@@ -5,15 +5,22 @@ date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
-```{Identyfikacja NA oraz wartości odstających, echo=FALSE}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r Identyfikacja Na}
 library(readr)
 library(dplyr)
 library(visdat)
 library(naniar)
-
+library(janitor)
 #Wczytanie pliku
 silownia <- read_csv("silownia_new.csv")
 tbl_df(silownia)
+
+silownia <- janitor::clean_names(silownia)
 
 #Liczba brakujących wartości w pliku, kolumnach i wierszach
 sum(is.na(silownia))
@@ -29,9 +36,43 @@ vis_miss(silownia, cluster=TRUE)
 gg_miss_upset(silownia, nsets = 3)
 
 #Wykresy częstości występowania brakujących zmiennych w zależności od płci i rodzaju ćwiczeń
-gg_miss_var(silownia, facet = Gender)
-gg_miss_var(silownia, facet = Workout_Type)
+gg_miss_var(silownia, facet = gender)
+gg_miss_var(silownia, facet = workout_type)
 
 ```
 
+```{r Wykresy pudełkowe przedstawiające wartości odstające}
+boxplot(silownia$weight_kg, main = "silownia$weight_kg.")
+boxplot(silownia$height_m, main = "silownia$height_kg.")
+boxplot(silownia$max_bpm, main = "silownia$max_bpm")
+boxplot(silownia$avg_bpm, main = "silownia$avg_bpm")
+boxplot(silownia$resting_bpm, main = "silownia$resting_bpm")
+boxplot(silownia$session_duration_hours, main = "silownia$session_duration_hours.")
+boxplot(silownia$calories_burned, main = "silownia$calories_burned")
+boxplot(silownia$fat_percentage, main = "silownia$fat_percentage")
+boxplot(silownia$water_intake_liters, main = "silownia$water_intake_liters.")
+boxplot(silownia$workout_frequency_days_week, main = "silownia$workout_frequency_days_week")
+boxplot(silownia$experience_level, main = "silownia$experience_level")
 
+```
+
+```{r Walidacja}
+
+```
+
+```{r Imputacja NA}
+library(tidyverse)
+library(dlookr)
+ 
+#Imputacja NA dla zmiennej age
+age1 <- round (imputate_na(silownia, age, gender, method = "rpart"))
+ summary(age1)
+
+plot(age1)
+
+silownia <- replace_na(data.frame(silownia, age1))
+silownia <- silownia %>% 
+  mutate(age = age1) %>%
+    select(-age1)
+
+```
