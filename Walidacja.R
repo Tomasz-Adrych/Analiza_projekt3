@@ -31,40 +31,41 @@
 #BMI: iloraz wagi i wzrostu
 
 install.packages("validate")
-
+install.packages("janitor")
 library(tidyverse)
 library(validate)
 library(readr)
-
+library(janitor)
 silownia <- read_csv("silownia_new.csv")
+silownia <- janitor::clean_names(silownia)
 
-silownia$Gender <- ifelse (silownia$Gender == "Male", 0, 
-                           ifelse(silownia$Gender == "Female", 1, 2))
 
-silownia$Workout_Type <- ifelse (silownia$Workout_Type == "Strength", 1, 
-                                 ifelse(silownia$Workout_Type == "HIIT", 2, 
-                                        ifelse(silownia$Workout_Type == "Cardio", 3,
-                                               ifelse(silownia$Workout_Type == "Yoga", 4, 5))))
+silownia$gender <- ifelse (silownia$gender == "Male", 0, 
+                           ifelse(silownia$gender == "Female", 1, 2))
+
+silownia$workout_type <- ifelse (silownia$workout_type == "Strength", 1, 
+                                 ifelse(silownia$workout_type == "HIIT", 2, 
+                                        ifelse(silownia$workout_type== "Cardio", 3,
+                                               ifelse(silownia$workout_type == "Yoga", 4, 5))))
 
 
 zasady <- validator(
-  Age >= 18 & age <= 100
-  , Weight >= 35 & Weight <= 200
-  , Height >= 1 & Height <= 2
-  , Max_BPM >= 30 & Max_BPM == 220 - Age
-  , Resting_BPM >= 30 & Resting_BPM <= 100
-  , Session_Duration > 0 & Session_Duration < 24
-  , if (Workout_Type == 3) Calories_Burned <= 500 * (Session_Duration / 2),
-    if (Workout_Type == 4) Calories_Burned <= 500 * (Session_Duration),
-    if (Workout_Type == 2) Calories_Burned <= 500 * (Session_Duration / 2),
-    if (Workout_Type == 1) Calories_Burned <= 300 * (Session_Duration)
-  , if (Gender == 0) Fat_Percentage >= 6
-  , if (Gender == 1) Fat_Percentage >= 12
-  , Water_Intake <= 5
-  , Experience_Level == c(1,2,3)
-  , Workout_Type == c(1,2,3,4)
-)
-
+  age >= 18 & age <= 100
+  , weight_kg >= 35 & weight_kg <= 200
+  , height_m >= 1 & height_m <= 2
+  , max_bpm >= 30 & max_bpm <= 220 
+  , resting_bpm >= 30 & resting_bpm <= 100
+  , session_duration_hours > 0 & session_duration_hours < 24
+  , workout_type == c(1,2,3,4)
+  , if (workout_type == 3)  Calories_Burned <= 500 * (session_duration_hours / 2)  ,
+   if (workout_type == 4)  Calories_Burned <= 500 * (session_duration_hours)  , 
+   if (workout_type == 2)  Calories_Burned <= 500 * (session_duration_hours / 2)  ,
+   if (workout_type == 1)  Calories_Burned <= 300 * (session_duration_hours)  ,
+   if (gender == 0) fat_percentage >= 6
+  ,if (gender == 1) fat_percentage >= 12
+  , water_intake_liters <= 5
+  )
+?validator
 out <- confront(silownia, zasady)
 
 summary(out)
