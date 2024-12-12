@@ -91,5 +91,37 @@ silownia <- silownia %>%
 
 #Imputacja NA dla zmiennej Workout_Type
 
+library(mice)
+
+#Zamiana zmiennych tekstowych na numeryczne 
+#Zmienna Gender: 0 oznacza mężczyznę, 1 kobietę
+#Zmienna Workout_Type: 1 to trening siłowy, 2 to trening HIIT, 3 to cardio, a 4 oznacza yogę
+silownia$gender <- ifelse (silownia$gender == "Male", 0, 
+                           ifelse(silownia$gender == "Female", 1, 2))
+
+silownia$workout_type <- ifelse (silownia$workout_type == "Strength", 1, 
+                                 ifelse(silownia$workout_type == "HIIT", 2, 
+                                        ifelse(silownia$workout_type == "Cardio", 3,
+                                               ifelse(silownia$workout_type == "Yoga", 4, 5))))
+
+
+#Dane do obliczeń; bez zmiennych Agei i BMI zawierających braki
+robocze <- silownia[, 1:15]
+
+#Zmienna Workout_type jako factor
+robocze$workout_type <- as.factor(robocze$workout_type)
+
+#####################################################
+#Wielowymiarowe wypełnianie przez równania łańcuchowe 
+
+#Tworzenie macierzy zmiennych wykorzystywanych do imputacji
+#Wybór zmiennej Workout_type jako tej, która ma zostać uzupełniona
+wybrana_zmienna <- is.na(robocze)
+
+#Imputacja danych
+wynik <- mice(robocze, where = wybrana_zmienna)
+
+#Podstawienie uzupełnionej zmiennej do zbioru danych
+silownia <- complete(wynik)
 
 ```
