@@ -61,8 +61,14 @@ zasady <- validator(
   , if (Gender == 0) Fat_Percentage >= 6
   , if (Gender == 1) Fat_Percentage >= 12
   , Water_Intake <= 5
+  , Experience_Level == c(1,2,3)
+  , Workout_Type == c(1,2,3,4)
 )
 
 out <- confront(silownia, zasady)
 
 summary(out)
+
+plot(out)
+
+#do zrobienia w domu, pozamieniać nazwy kolumn tak aby kod mógł poprawenie zadziałać 
