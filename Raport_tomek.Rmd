@@ -2,7 +2,7 @@
 title: "Raport_silownia"
 author: "Tomasz Adrych, Aleksandra Juchniewicz, Patrycja Karpicka"
 date: "`r Sys.Date()`"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
@@ -108,7 +108,7 @@ print(validation_summary)
 
 ```{r Imputacja NA}
 library(tidyverse)
-
+library(dlookr)
  
 #Imputacja NA dla zmiennej Age
 age1 <- round (imputate_na(silownia, age, gender, method = "rpart"))
