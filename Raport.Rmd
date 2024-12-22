@@ -171,3 +171,29 @@ wynik <- mice(robocze, where = wybrana_zmienna)
 silownia <- complete(wynik)
 
 ```
+
+```{r Wizualizacje, echo=TRUE}
+library(ggplot2)
+library(plotly)
+
+# Zobrazowanie za pomocą wykresów pudełkowych, liczby spalonych kalorii w zależności od wykonywanego treningu
+
+wykres1 <- ggplot(data = silownia, aes(x = workout_type, y = calories_burned)) +
+  geom_boxplot() +
+  coord_flip() +
+  ggtitle("Zależność między typem treningu a liczbą spalonych kalorii") +
+  xlab("Typ treningu") +
+  ylab("Spalone kalorie") +
+  theme_light()
+plotly::ggplotly(wykres1)
+
+#Krzywa gęstości BMI 
+
+wykres2 <- ggplot(silownia, aes(x = bmi)) + 
+  geom_density(fill ="blue") +
+   ggtitle("Krzywa gęstości BMI") +
+    xlab("Body mass index") +
+     ylab("Gęstość") 
+plotly::ggplotly((wykres2))
+
+```
