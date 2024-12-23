@@ -194,6 +194,13 @@ wykres2 <- ggplot(silownia, aes(x = bmi)) +
    ggtitle("Krzywa gęstości BMI") +
     xlab("Body mass index") +
      ylab("Gęstość") 
-plotly::ggplotly((wykres2))
+plotly::ggplotly(wykres2)
 
+wykres3 <- ggplot(silownia, aes(x = age, y = bmi, color = fat_percentage )) +
+  geom_point() +
+   ggtitle("Rozkład BMI i udziału tłuszczu w masie ciała według wieku") +
+      xlab("Wiek") +
+       ylab("Body mass index") 
+
+plotly::ggplotly(wykres3)
 ```
