@@ -7,6 +7,8 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+install.packages("RcmdrMisc")
+install.packages("sjPlot")
 library(readr)
 library(dplyr)
 library(visdat)
@@ -17,6 +19,8 @@ library(dlookr)
 library(mice)
 library(ggplot2)
 library(plotly)
+library(RcmdrMisc)
+library(sjPlot)
 ```
 
 ```{r Identyfikacja Na}
@@ -266,5 +270,17 @@ ggplot(silownia, aes(x = weight_kg, y = calories_burned, color = factor(experien
   ) +
   scale_color_brewer(palette = "Set1") +
   theme_minimal()
+
+```
+
+```{r Statystki_opisowe}
+?numSummary
+
+numSummary(
+  data.frame(silownia$age, silownia$weight_kg, silownia$height_m, silownia$max_bpm, silownia$avg_bpm, silownia$resting_bpm, silownia$session_duration_hours, silownia$calories_burned, silownia$fat_percentage, silownia$water_intake_liters, silownia$bmi),
+  statistics = c("mean","sd", "quantiles", "se(mean)", "var", "CV", "IQR", "skewness", "kurtosis"),
+  quantiles = c(.25, .50, .75))
+
+
 
 ```
