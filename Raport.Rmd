@@ -1,9 +1,13 @@
 ---
-title: "Raport_silownia"
+title: "Analiza Danych - raport z projektu - silownia"
 author: "Tomasz Adrych, Aleksandra Juchniewicz, Patrycja Karpicka"
 date: "`r Sys.Date()`"
 output: html_document
 ---
+
+# Analiza Danych - raport z projektu - silownia
+
+Ten zestaw danych zapewnia szczegółowy przegląd rutynowych ćwiczeń członków siłowni, atrybutów fizycznych i wskaźników sprawności. Zawiera on 973 próbki danych z siłowni, w tym kluczowe wskaźniki wydajności, takie jak tętno, spalone kalorie i czas trwania treningu. Każdy wpis zawiera również dane demograficzne i poziomy doświadczenia, co pozwala na kompleksową analizę wzorców sprawności, postępów sportowców i trendów zdrowotnych
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
