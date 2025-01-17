@@ -12,7 +12,7 @@ Ten zestaw danych zapewnia szczegółowy przegląd rutynowych ćwiczeń członk�
 1.  Pierwszym etapem naszego projektu jest wczytanie potrzebnych pakietów oraz bibliotek.
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 install.packages("RcmdrMisc")
 install.packages("sjPlot")
 install.packages("readr")
@@ -42,7 +42,7 @@ library(sjPlot)
 
 2.  Następnie zostały zidentyfikowane wartości brakujące. W przypadku zbioru danych siłownia, danych brakowało w kolumnach kolejno: Age, Workout Type oraz BMI (Body Mass Index). Do zobrazowania braków użyto pakietu VIS.
 
-```{r Identyfikacja Na}
+```{r Identyfikacja Na, echo=TRUE}
 #Wczytanie pliku
 silownia <- read_csv("silownia_new.csv")
 tbl_df(silownia)
@@ -70,7 +70,7 @@ gg_miss_var(silownia, facet = workout_type)
 
 3.  Trzeci etap opierał się na zobrazowaniu wartości odstających. Za pomocą wykresów pudełkowych znaleziono wartości w odstające w kolumnach waga oraz spalone kalorie. Wartości te nie budzą większych zastrzeżeń, gdyż odchylenia w tego typu danych są normalne. Pozostałe wykresy pudełkowe nie rodzą wątpliwości.
 
-```{r Wykresy pudełkowe przedstawiające wartości odstające}
+```{r Wykresy pudełkowe przedstawiające wartości odstające, echo=TRUE}
 boxplot(silownia$weight_kg, main = "silownia$weight_kg.")
 boxplot(silownia$height_m, main = "silownia$height_kg.")
 boxplot(silownia$max_bpm, main = "silownia$max_bpm")
@@ -140,7 +140,7 @@ print(validation_summary)
 
 5.  Piąty etap raportu opierał się na uzupełniuniu wartości brakujących w trzech kolumnach wskazanych w w etapie drugim. Do uzupełnienia braków w kolumnie age, użyto metody RPART (Recursive Partitioning and Regression Trees). W przypadku kolumny BMI braki uzupełniono. za pomocą wzoru: Waga / Wzrost\^2.
 
-```{r Imputacja NA}
+```{r Imputacja NA, echo=TRUE}
  
 #Imputacja NA dla zmiennej Age
 age1 <- round (imputate_na(silownia, age, gender, method = "rpart"))
@@ -203,6 +203,8 @@ silownia <- complete(wynik)
 
 ```
 
+6.  Szósty etap zawiera wizualizacje najistoniejszych danych z obszaru wydajności oraz efektywności treningów. Do opracowania wizualizacji użyto pakietów plotly oraz ggplot2.
+
 ```{r Wizualizacje, echo=TRUE}
 
 # Zobrazowanie za pomocą wykresów pudełkowych, liczby spalonych kalorii w zależności od wykonywanego treningu
@@ -246,8 +248,6 @@ ggplot(silownia, aes(x = age, y = bmi, color = gender)) +
     y = "BMI"
   ) +
   theme_minimal()
-
-
 
 # Średnia liczba spalonych kalorii w zależności od typu teningu
 
@@ -298,7 +298,9 @@ ggplot(silownia, aes(x = weight_kg, y = calories_burned, color = factor(experien
 
 ```
 
-```{r Statystki_opisowe}
+7. W ramach siódmego etapu sporządzono statysyki opisowe w tabeli dla zmiennych ilościowych. Obliczono między innymi: średnią, odchylenie standardowe, kwantyle, wariancję, współczynnik zmiennośći, skośność oraz kurtozę.
+
+```{r Statystki_opisowe, echo=TRUE}
 
 
 numSummary(
