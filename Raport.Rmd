@@ -25,6 +25,7 @@ install.packages("dlookr")
 install.packages("mice")
 install.packages("ggplot2")
 install.packages("plotly")
+install.packages("corrplot")
 
 library(readr)
 library(dplyr)
@@ -38,6 +39,7 @@ library(ggplot2)
 library(plotly)
 library(RcmdrMisc)
 library(sjPlot)
+library(corrplot)
 ```
 
 2.  Następnie zostały zidentyfikowane wartości brakujące. W przypadku zbioru danych siłownia, danych brakowało w kolumnach kolejno: Age, Workout Type oraz BMI (Body Mass Index). Do zobrazowania braków użyto pakietu VIS.
@@ -298,16 +300,29 @@ ggplot(silownia, aes(x = weight_kg, y = calories_burned, color = factor(experien
 
 ```
 
-7. W ramach siódmego etapu sporządzono statysyki opisowe w tabeli dla zmiennych ilościowych. Obliczono między innymi: średnią, odchylenie standardowe, kwantyle, wariancję, współczynnik zmiennośći, skośność oraz kurtozę.
+7.  W ramach siódmego etapu sporządzono statysyki opisowe w tabeli dla zmiennych ilościowych. Obliczono między innymi: średnią, odchylenie standardowe, kwantyle, wariancję, współczynnik zmiennośći, skośność oraz kurtozę. Ponad to obliczono korelacje pomiędzy zmiennymi oraz sporządzono macierz,aby łatwiej zobrazować wyniki.
 
 ```{r Statystki_opisowe, echo=TRUE}
 
+# Sporządzenie tabeli zawierającej statysytki opisowe 
 
-numSummary(
+Statystki <- numSummary(
   data.frame(silownia$age, silownia$weight_kg, silownia$height_m, silownia$max_bpm, silownia$avg_bpm, silownia$resting_bpm, silownia$session_duration_hours, silownia$calories_burned, silownia$fat_percentage, silownia$water_intake_liters, silownia$bmi),
   statistics = c("mean","sd", "quantiles", "se(mean)", "var", "CV", "IQR", "skewness", "kurtosis"),
   quantiles = c(.25, .50, .75))
 
+print(Statystki)
 
+# Obliczenie wybranych korelacji pomiędzy zmiennymi
+
+silownia[, "workout_type"] <- as.numeric(silownia[, "workout_type"])
+macierz_korelacji <- round(cor(silownia[,1:15]),2)
+
+print(macierz_korelacji)
+
+# Wizualizacja maciery korelacji
+
+corrplot(macierz_korelacji, method = "color", type = "upper", order = "hclust",
+         tl.col = "black", tl.srt = 45)
 
 ```
