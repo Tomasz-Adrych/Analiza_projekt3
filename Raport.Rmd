@@ -138,7 +138,7 @@ print(validation_summary)
 
 ```
 
-5.  Piąty etap raportu opierał się na uzupełniuniu wartości brakujących w trzech kolumnach wskazanych w w etapie drugim. Do uzupełnienia braków w kolumnie age, użyto metody RPART (Recursive Partitioning and Regression Trees).
+5.  Piąty etap raportu opierał się na uzupełniuniu wartości brakujących w trzech kolumnach wskazanych w w etapie drugim. Do uzupełnienia braków w kolumnie age, użyto metody RPART (Recursive Partitioning and Regression Trees). W przypadku kolumny BMI braki uzupełniono. za pomocą wzoru: Waga / Wzrost\^2.
 
 ```{r Imputacja NA}
  
