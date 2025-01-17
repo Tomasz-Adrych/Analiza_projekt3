@@ -9,7 +9,7 @@ output: html_document
 
 Ten zestaw danych zapewnia szczegółowy przegląd rutynowych ćwiczeń członków siłowni, atrybutów fizycznych i wskaźników sprawności. Zawiera on 973 próbki danych z siłowni, w tym kluczowe wskaźniki wydajności, takie jak tętno, spalone kalorie i czas trwania treningu. Każdy wpis zawiera również dane demograficzne i poziomy doświadczenia, co pozwala na kompleksową analizę wzorców sprawności, postępów sportowców i trendów zdrowotnych.
 
-1.  Pierwszym etapem naszego projektu jest wczytanie potrzebnych pakietów oraz bibliotek.
+## 1. Wczytanie potrzebnych pakietów oraz bibliotek.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -42,7 +42,9 @@ library(sjPlot)
 library(corrplot)
 ```
 
-2.  Następnie zostały zidentyfikowane wartości brakujące. W przypadku zbioru danych siłownia, danych brakowało w kolumnach kolejno: Age, Workout Type oraz BMI (Body Mass Index). Do zobrazowania braków użyto pakietu VIS.
+## 2. Identyfikacja wartości brakujących
+
+Następnie zostały zidentyfikowane wartości brakujące. W przypadku zbioru danych siłownia, danych brakowało w kolumnach kolejno: Age, Workout Type oraz BMI (Body Mass Index). Do zobrazowania braków użyto pakietu VIS.
 
 ```{r Identyfikacja Na, echo=TRUE}
 #Wczytanie pliku
@@ -70,7 +72,9 @@ gg_miss_var(silownia, facet = workout_type)
 
 ```
 
-3.  Trzeci etap opierał się na zobrazowaniu wartości odstających. Za pomocą wykresów pudełkowych znaleziono wartości w odstające w kolumnach waga oraz spalone kalorie. Wartości te nie budzą większych zastrzeżeń, gdyż odchylenia w tego typu danych są normalne. Pozostałe wykresy pudełkowe nie rodzą wątpliwości.
+## 3. Identyfikacja wartości odstających
+
+Trzeci etap opierał się na zobrazowaniu wartości odstających. Za pomocą wykresów pudełkowych znaleziono wartości w odstające w kolumnach waga oraz spalone kalorie. Wartości te nie budzą większych zastrzeżeń, gdyż odchylenia w tego typu danych są normalne. Pozostałe wykresy pudełkowe nie rodzą wątpliwości.
 
 ```{r Wykresy pudełkowe przedstawiające wartości odstające, echo=TRUE}
 boxplot(silownia$weight_kg, main = "silownia$weight_kg.")
@@ -87,7 +91,9 @@ boxplot(silownia$experience_level, main = "silownia$experience_level")
 
 ```
 
-4.  Czwartym etapem projektu było opracowanie reguł walidacyjnych. Reguły opracowano dla każdej zmiennej wchodzącej w skład zbioru danych. W poniższym chunku zostały opisane oraz przedstawione w tabeli. Końcowa tabela zawiera informajcę czy reguły w poszczególnych zmiennych zostały spełnione. Wszystkie zmienne oprócz kolumny średnio tętno spełniły wskazane reguły. W przypadku średniego tętna nie ma powdów do zmieniania danych, gdyż tętno ludzkie charakteryzuje się dużymi odchyleniami i może różnić się w zależności od innych zmiennych takich jak: masa ciała, intensywność treningu etc.
+## 4. Walidacje
+
+Czwartym etapem projektu było opracowanie reguł walidacyjnych. Reguły opracowano dla każdej zmiennej wchodzącej w skład zbioru danych. W poniższym chunku zostały opisane oraz przedstawione w tabeli. Końcowa tabela zawiera informajcę czy reguły w poszczególnych zmiennych zostały spełnione. Wszystkie zmienne oprócz kolumny średnio tętno spełniły wskazane reguły. W przypadku średniego tętna nie ma powdów do zmieniania danych, gdyż tętno ludzkie charakteryzuje się dużymi odchyleniami i może różnić się w zależności od innych zmiennych takich jak: masa ciała, intensywność treningu etc.
 
 ```{r Walidacja}
 validate_silownia <- function(silownia) {
@@ -140,7 +146,9 @@ print(validation_summary)
 
 ```
 
-5.  Piąty etap raportu opierał się na uzupełniuniu wartości brakujących w trzech kolumnach wskazanych w w etapie drugim. Do uzupełnienia braków w kolumnie age, użyto metody RPART (Recursive Partitioning and Regression Trees). W przypadku kolumny BMI braki uzupełniono. za pomocą wzoru: Waga / Wzrost\^2.
+## 5. Imputacje
+
+Piąty etap raportu opierał się na uzupełnieniu wartości brakujących w trzech kolumnach wskazanych w w etapie drugim. Do uzupełnienia braków w kolumnie age, użyto metody RPART (Recursive Partitioning and Regression Trees). W przypadku kolumny BMI braki uzupełniono. za pomocą wzoru: Waga / Wzrost\^2.
 
 ```{r Imputacja NA, echo=TRUE}
  
@@ -205,7 +213,9 @@ silownia <- complete(wynik)
 
 ```
 
-6.  Szósty etap zawiera wizualizacje najistoniejszych danych z obszaru wydajności oraz efektywności treningów. Do opracowania wizualizacji użyto pakietów plotly oraz ggplot2.
+## 6. Wizualizacje
+
+Szósty etap zawiera wizualizacje najistoniejszych danych z obszaru wydajności oraz efektywności treningów. Do opracowania wizualizacji użyto pakietów plotly oraz ggplot2.
 
 ```{r Wizualizacje, echo=TRUE}
 
@@ -300,7 +310,9 @@ ggplot(silownia, aes(x = weight_kg, y = calories_burned, color = factor(experien
 
 ```
 
-7.  W ramach siódmego etapu sporządzono statysyki opisowe w tabeli dla zmiennych ilościowych. Obliczono między innymi: średnią, odchylenie standardowe, kwantyle, wariancję, współczynnik zmiennośći, skośność oraz kurtozę. Ponad to obliczono korelacje pomiędzy zmiennymi oraz sporządzono macierz,aby łatwiej zobrazować wyniki.
+## 7. Statystki opisowe oraz korelacja
+
+W ramach siódmego etapu sporządzono statysyki opisowe w tabeli dla zmiennych ilościowych. Obliczono między innymi: średnią, odchylenie standardowe, kwantyle, wariancję, współczynnik zmiennośći, skośność oraz kurtozę. Ponad to obliczono korelacje pomiędzy zmiennymi oraz sporządzono macierz,aby łatwiej zobrazować wyniki.
 
 ```{r Statystki_opisowe, echo=TRUE}
 
