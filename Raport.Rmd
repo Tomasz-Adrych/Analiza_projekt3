@@ -345,7 +345,7 @@ corrplot(macierz_korelacji, method = "color", type = "upper", order = "hclust",
 
 ## 8. Wnioskowanie statystyczne 
 
-Ostatni etap analizy zawiera liniowy model regresji wielorakiej w ramach, którego przeprowadzono testy T-studenta, test współliniowości, zinterpretowano miary dopasowania R^2 oraz AIC. Dodatkowo sporządzono wykresy reszt modelu oraz zinterpretowano współczynniki przy zmiennych objaśniających.
+Ostatni etap analizy zawiera liniowy model regresji wielorakiej w ramach, którego przeprowadzono testy T-studenta, test współliniowości, test Shapiro-Wilka, zinterpretowano miary dopasowania R^2 oraz AIC. Dodatkowo sporządzono wykresy reszt modelu oraz zinterpretowano współczynniki przy zmiennych objaśniających.
 
 ```{r Wnioskowanie}
 # Model liniowej regresji wielorakiej objaśniający zależności między spalonymi kaloriam a czasem trwania trenigu, BMI, procentem tkanki tłuszczowej oraz średnim tętnem podczas treningu
@@ -391,7 +391,19 @@ vif(model)
 
 #Wszystkie zmienne w modelu przyjmują wartości nieznacznie większe od 1. Oznacza to, iż mamy doczynienia z brakiem wspólinowości więc zmienne nie są skorelowane z innymi zmiennymi.
 
+# Test normlaności rozkładu Shapiro-Wilka
+
+shapiro.test(model$residuals)
+
+#Ho: Reszty pochodzą z populacji o rozkładzie normlanym
+#Ha: Reszty nie pochodzą z populacji o rozkładzie normalnym
+
+#P-value = 0,2146, Brak podstaw do odrzucenia hipotezy zerowej, reszy pochodzą z populacji o rozkładzie normlanym.
+
 #Wykres modelu
 
 plot(model)
 ```
+
+## 9. Podsumowanie 
+
