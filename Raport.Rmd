@@ -9,10 +9,11 @@ output: html_document
 
 Ten zestaw danych zapewnia szczegółowy przegląd rutynowych ćwiczeń członków siłowni, atrybutów fizycznych i wskaźników sprawności. Zawiera on 973 próbki danych z siłowni, w tym kluczowe wskaźniki wydajności, takie jak tętno, spalone kalorie i czas trwania treningu. Każdy wpis zawiera również dane demograficzne i poziomy doświadczenia, co pozwala na kompleksową analizę wzorców sprawności, postępów sportowców i trendów zdrowotnych.
 
-## 1. Wczytanie potrzebnych pakietów oraz bibliotek.
+
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE)
+
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
 install.packages("RcmdrMisc")
 install.packages("sjPlot")
 install.packages("readr")
@@ -48,7 +49,7 @@ library(sjPlot)
 library(corrplot)
 ```
 
-## 2. Identyfikacja wartości brakujących
+## 1. Identyfikacja wartości brakujących
 
 Następnie zostały zidentyfikowane wartości brakujące. W przypadku zbioru danych siłownia, danych brakowało w kolumnach kolejno: Age, Workout Type oraz BMI (Body Mass Index). Do zobrazowania braków użyto pakietu VIS.
 
@@ -78,7 +79,7 @@ gg_miss_var(silownia, facet = workout_type)
 
 ```
 
-## 3. Identyfikacja wartości odstających
+## 2. Identyfikacja wartości odstających
 
 Trzeci etap opierał się na zobrazowaniu wartości odstających. Za pomocą wykresów pudełkowych znaleziono wartości w odstające w kolumnach waga oraz spalone kalorie. Wartości te nie budzą większych zastrzeżeń, gdyż odchylenia w tego typu danych są normalne. Pozostałe wykresy pudełkowe nie rodzą wątpliwości.
 
@@ -97,11 +98,11 @@ boxplot(silownia$experience_level, main = "silownia$experience_level")
 
 ```
 
-## 4. Walidacje
+## 3. Walidacje
 
 Czwartym etapem projektu było opracowanie reguł walidacyjnych. Reguły opracowano dla każdej zmiennej wchodzącej w skład zbioru danych. W poniższym chunku zostały opisane oraz przedstawione w tabeli. Końcowa tabela zawiera informajcę czy reguły w poszczególnych zmiennych zostały spełnione. Wszystkie zmienne oprócz kolumny średnio tętno spełniły wskazane reguły. W przypadku średniego tętna nie ma powdów do zmieniania danych, gdyż tętno ludzkie charakteryzuje się dużymi odchyleniami i może różnić się w zależności od innych zmiennych takich jak: masa ciała, intensywność treningu etc.
 
-```{r Walidacja}
+```{r Walidacja, echo=TRUE}
 validate_silownia <- function(silownia) {
   silownia %>%
     mutate(
@@ -152,7 +153,7 @@ print(validation_summary)
 
 ```
 
-## 5. Imputacje
+## 4. Imputacje
 
 Piąty etap raportu opierał się na uzupełnieniu wartości brakujących w trzech kolumnach wskazanych w w etapie drugim. Do uzupełnienia braków w kolumnie age, użyto metody RPART (Recursive Partitioning and Regression Trees). W przypadku kolumny BMI braki uzupełniono. za pomocą wzoru: Waga / Wzrost\^2.
 
@@ -219,7 +220,7 @@ silownia <- complete(wynik)
 
 ```
 
-## 6. Wizualizacje
+## 5. Wizualizacje
 
 Szósty etap zawiera wizualizacje najistoniejszych danych z obszaru wydajności oraz efektywności treningów. Do opracowania wizualizacji użyto pakietów plotly oraz ggplot2.
 
@@ -316,7 +317,7 @@ ggplot(silownia, aes(x = weight_kg, y = calories_burned, color = factor(experien
 
 ```
 
-## 7. Statystki opisowe oraz korelacja
+## 6. Statystki opisowe oraz korelacja
 
 W ramach siódmego etapu sporządzono statysyki opisowe w tabeli dla zmiennych ilościowych. Obliczono między innymi: średnią, odchylenie standardowe, kwantyle, wariancję, współczynnik zmiennośći, skośność oraz kurtozę. Ponad to obliczono korelacje pomiędzy zmiennymi oraz sporządzono macierz,aby łatwiej zobrazować wyniki.
 
@@ -345,11 +346,11 @@ corrplot(macierz_korelacji, method = "color", type = "upper", order = "hclust",
 
 ```
 
-## 8. Wnioskowanie statystyczne
+## 7. Wnioskowanie statystyczne
 
 Ostatni etap analizy zawiera liniowy model regresji wielorakiej w ramach, którego przeprowadzono testy T-studenta, test współliniowości, test Shapiro-Wilka, zinterpretowano miary dopasowania R\^2 oraz AIC. Dodatkowo sporządzono wykresy reszt modelu oraz zinterpretowano współczynniki przy zmiennych objaśniających. Na koniec przeprowadzono testy istotności t-studenta pomiędzy: typem treningu a liczbą spalonych kalorii oraz płcią a BMI.
 
-```{r Wnioskowanie}
+```{r Wnioskowanie, echo=TRUE}
 # Model liniowej regresji wielorakiej objaśniający zależności między spalonymi kaloriam a czasem trwania trenigu, BMI, procentem tkanki tłuszczowej oraz średnim tętnem podczas treningu
 
 model <- lm(calories_burned ~ session_duration_hours + bmi + fat_percentage + avg_bpm, data = silownia)
@@ -437,6 +438,6 @@ ggbetweenstats(
 
 ```
 
-## 9. Podsumowanie
+## 8. Podsumowanie
 
 W całym raporcie przeprowadziliśmy kolejno data Wrangling (w tym, wstępną analizę danych, czyszczenie danych, zindetfyikowanie wartości brakujących oraz odstających, imputację danych oraz przygotowanie danych do wizualizacji), wizulizację danych. W kolejnym etapie zostały przedstawione najważniejsze statysyki opisowe wszystkich zmiennych wchodzących w skład naszego zbioru danych. Ponadto stworzyliśmy macierz korelacji, aby lepiej zwiuzalizować zależności pomiędzy poszczególynymi zmiennymi. W ramach ostatniego etapu sporządziliśmy liniowy model regresji wielorakiej za pomocą, którego wyjasniliśmy jak na liczbę spalonych kalorii wpływają zmienne: czas trwania sesji treningowej, BMI oraz procent tkanki tłuszczowej. Model okazał się bardzo dobrze dopasowany oraz istotny statysycznie. Normalność rozkładu reszt sprawdziliśmy za pomocą testu Shapiro-Wilka. Ponad to udowodniliśmy za pomocą testów t, iż typ treningu nie wpływa istotnie na liczbę spalonych kalorii oraz sprawdziliśmy, że BMI istotnie różni się między płciami.
