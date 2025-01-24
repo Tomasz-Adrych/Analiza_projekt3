@@ -28,7 +28,9 @@ install.packages("plotly")
 install.packages("corrplot")
 install.packages("car")
 install.packages("palmerpenguins", repos = "https://cloud.r-project.org") 
+install.packages("ggstatsplot")
 
+library(ggstatsplot)
 library(car)
 library(palmerpenguins)
 library(readr)
@@ -343,9 +345,9 @@ corrplot(macierz_korelacji, method = "color", type = "upper", order = "hclust",
 
 ```
 
-## 8. Wnioskowanie statystyczne 
+## 8. Wnioskowanie statystyczne
 
-Ostatni etap analizy zawiera liniowy model regresji wielorakiej w ramach, którego przeprowadzono testy T-studenta, test współliniowości, test Shapiro-Wilka, zinterpretowano miary dopasowania R^2 oraz AIC. Dodatkowo sporządzono wykresy reszt modelu oraz zinterpretowano współczynniki przy zmiennych objaśniających.
+Ostatni etap analizy zawiera liniowy model regresji wielorakiej w ramach, którego przeprowadzono testy T-studenta, test współliniowości, test Shapiro-Wilka, zinterpretowano miary dopasowania R\^2 oraz AIC. Dodatkowo sporządzono wykresy reszt modelu oraz zinterpretowano współczynniki przy zmiennych objaśniających. Na koniec przeprowadzono testy istotności t-studenta pomiędzy: typem treningu a liczbą spalonych kalorii oraz płcią a BMI.
 
 ```{r Wnioskowanie}
 # Model liniowej regresji wielorakiej objaśniający zależności między spalonymi kaloriam a czasem trwania trenigu, BMI, procentem tkanki tłuszczowej oraz średnim tętnem podczas treningu
@@ -400,10 +402,41 @@ shapiro.test(model$residuals)
 
 #P-value = 0,2146, Brak podstaw do odrzucenia hipotezy zerowej, reszy pochodzą z populacji o rozkładzie normlanym.
 
-#Wykres modelu
+#################################################
 
-plot(model)
+#Zależność między typem treningu a liczbą spalonych kalorii
+
+# Ho: Brak różnic między typem treningów a liczbą spalonych kalorii
+# Ha : Są istotne różnice między typem treningów a liczbą spalonych kalorii
+
+ggbetweenstats(
+  data  = silownia,
+  x     = workout_type,
+  y     = calories_burned,
+  title = "Sprawdzenie zależności między typem treningu a liczbą spalonych kalorii"
+)
+
+# p-value > 0,05 oznacza, iż nie ma statystycznie istotnych różnic między typem treningu a liczbą spalonych kalorii. 
+
+################################
+
+# Porównanie BMI względem płci
+
+# Ho: Brak istotnych statystycznie różnic między płcią a BMI
+# Ha : Występują istotne statystycznie róznice między płcią a BMI
+
+ggbetweenstats(
+  data  = silownia,
+  x     = gender,
+  y     = bmi,
+  title = "Porównianie BMI w zależności płci"
+)
+
+# p-value < 0,05 oznacza, iż są statystycznie istotne różnic między płcią a BMI.
+
+
 ```
 
-## 9. Podsumowanie 
+## 9. Podsumowanie
 
+W całym raporcie przeprowadziliśmy kolejno data Wrangling (w tym, wstępną analizę danych, czyszczenie danych, zindetfyikowanie wartości brakujących oraz odstających, imputację danych oraz przygotowanie danych do wizualizacji), wizulizację danych. W kolejnym etapie zostały przedstawione najważniejsze statysyki opisowe wszystkich zmiennych wchodzących w skład naszego zbioru danych. Ponadto stworzyliśmy macierz korelacji, aby lepiej zwiuzalizować zależności pomiędzy poszczególynymi zmiennymi. W ramach ostatniego etapu sporządziliśmy liniowy model regresji wielorakiej za pomocą, którego wyjasniliśmy jak na liczbę spalonych kalorii wpływają zmienne: czas trwania sesji treningowej, BMI oraz procent tkanki tłuszczowej. Model okazał się bardzo dobrze dopasowany oraz istotny statysycznie. Normalność rozkładu reszt sprawdziliśmy za pomocą testu Shapiro-Wilka. Ponad to udowodniliśmy za pomocą testów t, iż typ treningu nie wpływa istotnie na liczbę spalonych kalorii oraz sprawdziliśmy, że BMI istotnie różni się między płciami.
