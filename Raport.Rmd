@@ -1,0 +1,443 @@
+---
+title: "Analiza Danych - raport z projektu - silownia"
+author: "Tomasz Adrych, Aleksandra Juchniewicz, Patrycja Karpicka"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+# *Analiza Danych - raport z projektu - silownia*
+
+Ten zestaw danych zapewnia szczegółowy przegląd rutynowych ćwiczeń członków siłowni, atrybutów fizycznych i wskaźników sprawności. Zawiera on 973 próbki danych z siłowni, w tym kluczowe wskaźniki wydajności, takie jak tętno, spalone kalorie i czas trwania treningu. Każdy wpis zawiera również dane demograficzne i poziomy doświadczenia, co pozwala na kompleksową analizę wzorców sprawności, postępów sportowców i trendów zdrowotnych.
+
+
+
+```{r setup, include=FALSE}
+
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+install.packages("RcmdrMisc")
+install.packages("sjPlot")
+install.packages("readr")
+install.packages("dplyr")
+install.packages("visdat")
+install.packages("naniar")
+install.packages("janitor")
+install.packages("tidyverse")
+install.packages("dlookr")
+install.packages("mice")
+install.packages("ggplot2")
+install.packages("plotly")
+install.packages("corrplot")
+install.packages("car")
+install.packages("palmerpenguins", repos = "https://cloud.r-project.org") 
+install.packages("ggstatsplot")
+
+library(ggstatsplot)
+library(car)
+library(palmerpenguins)
+library(readr)
+library(dplyr)
+library(visdat)
+library(naniar)
+library(janitor)
+library(tidyverse)
+library(dlookr)
+library(mice)
+library(ggplot2)
+library(plotly)
+library(RcmdrMisc)
+library(sjPlot)
+library(corrplot)
+```
+
+## 1. Identyfikacja wartości brakujących
+
+Po pierwsze zostały zidentyfikowane wartości brakujące. W przypadku zbioru danych siłownia, danych brakowało w kolumnach kolejno: Age, Workout Type oraz BMI (Body Mass Index). Do zobrazowania braków użyto pakietu VIS.
+
+```{r Identyfikacja Na, echo=TRUE}
+#Wczytanie pliku
+silownia <- read_csv("silownia_new.csv")
+tbl_df(silownia)
+
+silownia <- janitor::clean_names(silownia)
+
+#Liczba brakujących wartości w pliku, kolumnach i wierszach
+sum(is.na(silownia))
+colSums(is.na(silownia))
+rowSums(is.na(silownia))
+n_miss(silownia)
+
+#Wykresy brakujących wartości 
+vis_miss(silownia)
+vis_miss(silownia, cluster=TRUE)
+
+#Wykres powiązań pomiędzy zmiennymi, w których występują wartości NA 
+gg_miss_upset(silownia, nsets = 3)
+
+#Wykresy częstości występowania brakujących zmiennych w zależności od płci i rodzaju ćwiczeń
+gg_miss_var(silownia, facet = gender)
+gg_miss_var(silownia, facet = workout_type)
+
+```
+
+## 2. Identyfikacja wartości odstających
+
+Trzeci etap opierał się na zobrazowaniu wartości odstających. Za pomocą wykresów pudełkowych znaleziono wartości w odstające w kolumnach waga oraz spalone kalorie. Wartości te nie budzą większych zastrzeżeń, gdyż odchylenia w tego typu danych są normalne. Pozostałe wykresy pudełkowe nie rodzą wątpliwości.
+
+```{r Wykresy pudełkowe przedstawiające wartości odstające, echo=TRUE}
+boxplot(silownia$weight_kg, main = "silownia$weight_kg.")
+boxplot(silownia$height_m, main = "silownia$height_kg.")
+boxplot(silownia$max_bpm, main = "silownia$max_bpm")
+boxplot(silownia$avg_bpm, main = "silownia$avg_bpm")
+boxplot(silownia$resting_bpm, main = "silownia$resting_bpm")
+boxplot(silownia$session_duration_hours, main = "silownia$session_duration_hours.")
+boxplot(silownia$calories_burned, main = "silownia$calories_burned")
+boxplot(silownia$fat_percentage, main = "silownia$fat_percentage")
+boxplot(silownia$water_intake_liters, main = "silownia$water_intake_liters.")
+boxplot(silownia$workout_frequency_days_week, main = "silownia$workout_frequency_days_week")
+boxplot(silownia$experience_level, main = "silownia$experience_level")
+
+```
+
+## 3. Walidacje
+
+Czwartym etapem projektu było opracowanie reguł walidacyjnych. Reguły opracowano dla każdej zmiennej wchodzącej w skład zbioru danych. W poniższym chunku zostały opisane oraz przedstawione w tabeli. Końcowa tabela zawiera informajcę czy reguły w poszczególnych zmiennych zostały spełnione. Wszystkie zmienne oprócz kolumny średnio tętno spełniły wskazane reguły. W przypadku średniego tętna nie ma powdów do zmieniania danych, gdyż tętno ludzkie charakteryzuje się dużymi odchyleniami i może różnić się w zależności od innych zmiennych takich jak: masa ciała, intensywność treningu etc.
+
+```{r Walidacja, echo=TRUE}
+validate_silownia <- function(silownia) {
+  silownia %>%
+    mutate(
+      age_valid = ifelse(is.na(age) | (age >= 18 & age <= 100), TRUE, FALSE),
+      gender_valid = ifelse(gender %in% c("Male", "Female"), TRUE, FALSE),
+      weight_valid = ifelse(weight_kg > 35 & weight_kg <= 200, TRUE, FALSE),
+      height_valid = ifelse(height_m >= 1 & height_m <= 2.5, TRUE, FALSE),
+      max_bpm_valid = ifelse(max_bpm >= 30 & max_bpm <= 220, TRUE, FALSE),
+      avg_bpm_valid = ifelse(avg_bpm <= max_bpm & avg_bpm > resting_bpm, TRUE, FALSE),
+      resting_bpm_valid = ifelse(resting_bpm >= 30 & resting_bpm <= 100, TRUE, FALSE),
+      session_duration_valid = ifelse(session_duration_hours > 0 & session_duration_hours <= 12, TRUE, FALSE),
+      calories_burned_valid = ifelse(calories_burned > 0, TRUE, FALSE),
+      workout_type_valid = ifelse(is.na(workout_type) | workout_type %in% c("Yoga", "Cardio", "Strength", "HIIT"), TRUE, FALSE),
+      fat_percentage_valid = ifelse(fat_percentage >= 6 & fat_percentage <= 100, TRUE, FALSE),
+      water_intake_valid = ifelse(water_intake_liters >= 0.5 & water_intake_liters <= 5, TRUE, FALSE),
+      workout_frequency_valid = ifelse(workout_frequency_days_week >= 0 & workout_frequency_days_week <= 7, TRUE, FALSE),
+      experience_level_valid = ifelse(experience_level >= 1 & experience_level <= 3, TRUE, FALSE),
+      bmi_valid = ifelse(is.na(bmi) | (bmi > 10 & bmi <= 50), TRUE, FALSE)
+    )
+}
+
+# Zastosowanie reguł walidacyjnych
+validated_silownia <- validate_silownia(silownia)
+
+# Sprawdzenie 
+validation_summary <- validated_silownia %>%
+  summarise(
+    age_valid = all(age_valid),
+    gender_valid = all(gender_valid),
+    weight_valid = all(weight_valid),
+    height_valid = all(height_valid),
+    max_bpm_valid = all(max_bpm_valid),
+    avg_bpm_valid = all(avg_bpm_valid),
+    resting_bpm_valid = all(resting_bpm_valid),
+    session_duration_valid = all(session_duration_valid),
+    calories_burned_valid = all(calories_burned_valid),
+    workout_type_valid = all(workout_type_valid),
+    fat_percentage_valid = all(fat_percentage_valid),
+    water_intake_valid = all(water_intake_valid),
+    workout_frequency_valid = all(workout_frequency_valid),
+    experience_level_valid = all(experience_level_valid),
+    bmi_valid = all(bmi_valid)
+  )
+
+# Zobrazowanie 
+print(validation_summary)
+
+
+```
+
+## 4. Imputacje
+
+Piąty etap raportu opierał się na uzupełnieniu wartości brakujących w trzech kolumnach wskazanych w w etapie drugim. Do uzupełnienia braków w kolumnie age, użyto metody RPART (Recursive Partitioning and Regression Trees). W przypadku kolumny BMI braki uzupełniono. za pomocą wzoru: Waga / Wzrost\^2.
+
+```{r Imputacja NA, echo=TRUE}
+ 
+#Imputacja NA dla zmiennej Age
+age1 <- round (imputate_na(silownia, age, gender, method = "rpart"))
+ summary(age1)
+
+plot(age1)
+
+silownia <- replace_na(data.frame(silownia, age1))
+silownia <- silownia %>% 
+  mutate(age = age1) %>%
+    select(-age1)
+
+#Imputacja NA dla zmiennej BMI
+silownia <- silownia %>%
+  mutate(
+    bmi = if_else(
+      is.na(bmi),                                                
+      silownia$weight_kg / (silownia$height_m^2),        
+      bmi                                                        
+      
+    )
+  )
+# zaokrąglam do 2 miejsc po przecinku 
+silownia <- silownia %>%
+  mutate(bmi = round(bmi, 2))
+
+#Imputacja NA dla zmiennej Workout_Type
+
+
+#Zamiana zmiennych tekstowych na numeryczne 
+#Zmienna Gender: 0 oznacza mężczyznę, 1 kobietę
+#Zmienna Workout_Type: 1 to trening siłowy, 2 to trening HIIT, 3 to cardio, a 4 oznacza yogę
+silownia$gender <- ifelse (silownia$gender == "Male", 0, 
+                           ifelse(silownia$gender == "Female", 1, 2))
+
+silownia$workout_type <- ifelse (silownia$workout_type == "Strength", 1, 
+                                 ifelse(silownia$workout_type == "HIIT", 2, 
+                                        ifelse(silownia$workout_type == "Cardio", 3,
+                                               ifelse(silownia$workout_type == "Yoga", 4, 5))))
+
+
+#Dane do obliczeń; bez zmiennych Agei i BMI zawierających braki
+robocze <- silownia[, 1:15]
+
+#Zmienna Workout_type jako factor
+robocze$workout_type <- as.factor(robocze$workout_type)
+
+#####################################################
+#Wielowymiarowe wypełnianie przez równania łańcuchowe 
+
+#Tworzenie macierzy zmiennych wykorzystywanych do imputacji
+#Wybór zmiennej Workout_type jako tej, która ma zostać uzupełniona
+wybrana_zmienna <- is.na(robocze)
+
+#Imputacja danych
+wynik <- mice(robocze, where = wybrana_zmienna)
+
+#Podstawienie uzupełnionej zmiennej do zbioru danych
+silownia <- complete(wynik)
+
+```
+
+## 5. Wizualizacje
+
+Szósty etap zawiera wizualizacje najistoniejszych danych z obszaru wydajności oraz efektywności treningów. Do opracowania wizualizacji użyto pakietów plotly oraz ggplot2.
+
+```{r Wizualizacje, echo=TRUE}
+
+# Zobrazowanie za pomocą wykresów pudełkowych, liczby spalonych kalorii w zależności od wykonywanego treningu
+
+wykres1 <- ggplot(data = silownia, aes(x = workout_type, y = calories_burned)) +
+  geom_boxplot() +
+  coord_flip() +
+  ggtitle("Zależność między typem treningu a liczbą spalonych kalorii") +
+  xlab("Typ treningu") +
+  ylab("Spalone kalorie") +
+  theme_light()
+plotly::ggplotly(wykres1)
+
+#Krzywa gęstości BMI 
+
+wykres2 <- ggplot(silownia, aes(x = bmi)) + 
+  geom_density(fill ="blue") +
+   ggtitle("Krzywa gęstości BMI") +
+    xlab("Body mass index") +
+     ylab("Gęstość") 
+plotly::ggplotly(wykres2)
+
+#Rozkład BMI i udziału tłuszczu w masie ciała według wieku
+
+wykres3 <- ggplot(silownia, aes(x = age, y = bmi, color = fat_percentage )) +
+  geom_point() +
+   ggtitle("Rozkład BMI i udziału tłuszczu w masie ciała według wieku") +
+      xlab("Wiek") +
+       ylab("Body mass index") 
+
+plotly::ggplotly(wykres3)
+
+# Zależność między wiekiem a BMI z podziałem na płeć
+
+ggplot(silownia, aes(x = age, y = bmi, color = gender)) +
+  geom_point(size = 3) +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Zależność między wiekiem a BMI",
+    x = "Wiek",
+    y = "BMI"
+  ) +
+  theme_minimal()
+
+# Średnia liczba spalonych kalorii w zależności od typu teningu
+
+# Grupowanie danych i obliczenie średnich
+avg_calories <- aggregate(calories_burned ~ workout_type, data = silownia, mean)
+
+# Wykres słupkowy
+ggplot(avg_calories, aes(x = workout_type, y = calories_burned, fill = workout_type)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = round(calories_burned, 1)), vjust = -0.5, size = 5) + # Dodanie liczb nad słupkami
+  labs(
+    title = "Średnia liczba spalonych kalorii w zależności od typu treningu",
+    x = "Typ treningu",
+    y = "Średnie spalone kalorie"
+  ) +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Set2")
+
+#  Spożycie wody w zależności od poziomu doświadczenia
+
+ggplot(silownia, aes(x = factor(experience_level, labels = c("Beginner", "Intermediate", "Advanced")), 
+                         y = water_intake_liters, fill = factor(experience_level))) +
+  geom_boxplot(outlier.color = "red", outlier.size = 3) +
+  geom_jitter(width = 0.2, aes(color = workout_frequency_days_week), size = 3, alpha = 0.7) +
+  labs(
+    title = "Spożycie wody w zależności od poziomu doświadczenia",
+    x = "Poziom doświadczenia",
+    y = "Spożycie wody (litry)",
+    color = "Częstotliwość treningów (dni/tydzień)"
+  ) +
+  scale_fill_brewer(palette = "Pastel1") +
+  theme_minimal()
+
+
+# Wykres spalonych kalorii do wagi 
+
+ggplot(silownia, aes(x = weight_kg, y = calories_burned, color = factor(experience_level))) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") +
+  labs(
+    title = "Zależność spalonych kalorii od wagi",
+    x = "Waga (kg)",
+    y = "Spalone kalorie",
+    color = "Poziom doświadczenia"
+  ) +
+  scale_color_brewer(palette = "Set1") +
+  theme_minimal()
+
+```
+
+## 6. Statystyki opisowe oraz korelacja
+
+W ramach siódmego etapu sporządzono statysyki opisowe w tabeli dla zmiennych ilościowych. Obliczono między innymi: średnią, odchylenie standardowe, kwantyle, wariancję, współczynnik zmiennośći, skośność oraz kurtozę. Ponad to obliczono korelacje pomiędzy zmiennymi oraz sporządzono macierz,aby łatwiej zobrazować wyniki.
+
+```{r Statystki_opisowe, echo=TRUE}
+
+# Sporządzenie tabeli zawierającej statysytki opisowe 
+
+Statystki <- numSummary(
+  data.frame(silownia$age, silownia$weight_kg, silownia$height_m, silownia$max_bpm, silownia$avg_bpm, silownia$resting_bpm, silownia$session_duration_hours, silownia$calories_burned, silownia$fat_percentage, silownia$water_intake_liters, silownia$bmi),
+  statistics = c("mean","sd", "quantiles", "se(mean)", "var", "CV", "IQR", "skewness", "kurtosis"),
+  quantiles = c(.25, .50, .75))
+
+print(Statystki)
+
+# Obliczenie wybranych korelacji pomiędzy zmiennymi
+
+silownia[, "workout_type"] <- as.numeric(silownia[, "workout_type"])
+macierz_korelacji <- round(cor(silownia[,1:15]),2)
+
+print(macierz_korelacji)
+
+# Wizualizacja maciery korelacji
+
+corrplot(macierz_korelacji, method = "color", type = "upper", order = "hclust",
+         tl.col = "black", tl.srt = 45)
+
+```
+
+## 7. Wnioskowanie statystyczne
+
+Ostatni etap analizy zawiera liniowy model regresji wielorakiej w ramach, którego przeprowadzono testy T-studenta, test współliniowości, test Shapiro-Wilka, zinterpretowano miary dopasowania R\^2 oraz AIC. Dodatkowo sporządzono wykresy reszt modelu oraz zinterpretowano współczynniki przy zmiennych objaśniających. Na koniec przeprowadzono testy istotności t-studenta pomiędzy: typem treningu a liczbą spalonych kalorii oraz płcią a BMI.
+
+```{r Wnioskowanie, echo=TRUE}
+# Model liniowej regresji wielorakiej objaśniający zależności między spalonymi kaloriam a czasem trwania trenigu, BMI, procentem tkanki tłuszczowej oraz średnim tętnem podczas treningu
+
+model <- lm(calories_burned ~ session_duration_hours + bmi + fat_percentage + avg_bpm, data = silownia)
+
+summary(model)
+
+# Test t-studenta dla zmiennych objaśnianych modelu
+
+# Ho: Współczynnik przy zmiennej nie różni się istotnie od zera
+# Ha: Współcznnik przy zmiennej różni się istotnie od zera
+
+#W przypadku wszystkich zmiennych p-value dla t-studenta jest mniejsze od poziomu Alfa. Odrzucamy hipotezę zerową w wyniku czego wszystkie zmienne różnią się istotnie od zera.
+
+#Interpretacje
+
+#Session_duration_hours: Wzrost czasu trawania sesji o 1 godzinę średnio powoduje wzrost liczby spalonych kalori o 672.91 kcal ceteris paribus
+
+#BMI: Wzrost BMI o jedną jednostkę średnio powoduje wzrost liczby spalonych kalori o 1.9 kcal ceteris paribus
+
+#Fat_Percentage: Wzrost tkanki tłuszczowej o 1 punkt procentowy średnio powoduje spadek liczby spalonych kalorii o 4,24 kcal ceteris paribus.
+
+#Avg_BPM: Wzrost średniego tętna podczas treningu o 1 jednostkę średnio powoduje wzrost liczby spalonych kalori ceteris paribus.
+
+#R^2 = 94%, Zmienne wchodzące w skład modelu objaśniły jego zmienność w 94%. Model jest bardzo dobrze dopasowania
+
+AIC(model) #AIC = 10948.12. Model jest dobrze dopasowany.
+
+#Wykres reszt z modelu
+
+plot(model$residuals)
+
+#Testowanie współliniowości
+
+vif(model)
+
+# VIF 1: Brak współliniowości. Zmienna nie jest skorelowana z innymi zmiennymi.
+
+# 1 < VIF < 5: Umiarkowana współliniowość. Zmienna jest w pewnym stopniu skorelowana z innymi zmiennymi,
+
+# VIF 5: Wysoka współliniowość. Zmienna jest silnie skorelowana z innymi zmiennymi, co może prowadzić
+
+#Wszystkie zmienne w modelu przyjmują wartości nieznacznie większe od 1. Oznacza to, iż mamy doczynienia z brakiem wspólinowości więc zmienne nie są skorelowane z innymi zmiennymi.
+
+# Test normlaności rozkładu Shapiro-Wilka
+
+shapiro.test(model$residuals)
+
+#Ho: Reszty pochodzą z populacji o rozkładzie normlanym
+#Ha: Reszty nie pochodzą z populacji o rozkładzie normalnym
+
+#P-value = 0,2146, Brak podstaw do odrzucenia hipotezy zerowej, reszy pochodzą z populacji o rozkładzie normlanym.
+
+#################################################
+
+#Zależność między typem treningu a liczbą spalonych kalorii
+
+# Ho: Brak różnic między typem treningów a liczbą spalonych kalorii
+# Ha : Są istotne różnice między typem treningów a liczbą spalonych kalorii
+
+ggbetweenstats(
+  data  = silownia,
+  x     = workout_type,
+  y     = calories_burned,
+  title = "Sprawdzenie zależności między typem treningu a liczbą spalonych kalorii"
+)
+
+# p-value > 0,05 oznacza, iż nie ma statystycznie istotnych różnic między typem treningu a liczbą spalonych kalorii. 
+
+################################
+
+# Porównanie BMI względem płci
+
+# Ho: Brak istotnych statystycznie różnic między płcią a BMI
+# Ha : Występują istotne statystycznie róznice między płcią a BMI
+
+ggbetweenstats(
+  data  = silownia,
+  x     = gender,
+  y     = bmi,
+  title = "Porównianie BMI w zależności płci"
+)
+
+# p-value < 0,05. Odrzucamy hipotezę zerową, a więc są statystycznie istotne różnice między płcią a BMI.
+
+
+```
+
+## 8. Podsumowanie
+
+W całym raporcie przeprowadziliśmy kolejno data Wrangling (w tym, wstępną analizę danych, czyszczenie danych, zindetfyikowanie wartości brakujących oraz odstających, imputację danych oraz przygotowanie danych do wizualizacji), wizulizację danych. W kolejnym etapie zostały przedstawione najważniejsze statysyki opisowe wszystkich zmiennych wchodzących w skład naszego zbioru danych. Ponadto stworzyliśmy macierz korelacji, aby lepiej zwiuzalizować zależności pomiędzy poszczególynymi zmiennymi. W ramach ostatniego etapu sporządziliśmy liniowy model regresji wielorakiej za pomocą, którego wyjasniliśmy jak na liczbę spalonych kalorii wpływają zmienne: czas trwania sesji treningowej, BMI oraz procent tkanki tłuszczowej. Model okazał się bardzo dobrze dopasowany oraz istotny statysycznie. Normalność rozkładu reszt sprawdziliśmy za pomocą testu Shapiro-Wilka. Ponad to udowodniliśmy za pomocą testów t, iż typ treningu nie wpływa istotnie na liczbę spalonych kalorii oraz sprawdziliśmy, że BMI istotnie różni się między płciami.
