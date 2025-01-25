@@ -51,7 +51,7 @@ library(corrplot)
 
 ## 1. Identyfikacja wartości brakujących
 
-Następnie zostały zidentyfikowane wartości brakujące. W przypadku zbioru danych siłownia, danych brakowało w kolumnach kolejno: Age, Workout Type oraz BMI (Body Mass Index). Do zobrazowania braków użyto pakietu VIS.
+Po pierwsze zostały zidentyfikowane wartości brakujące. W przypadku zbioru danych siłownia, danych brakowało w kolumnach kolejno: Age, Workout Type oraz BMI (Body Mass Index). Do zobrazowania braków użyto pakietu VIS.
 
 ```{r Identyfikacja Na, echo=TRUE}
 #Wczytanie pliku
@@ -317,7 +317,7 @@ ggplot(silownia, aes(x = weight_kg, y = calories_burned, color = factor(experien
 
 ```
 
-## 6. Statystki opisowe oraz korelacja
+## 6. Statystyki opisowe oraz korelacja
 
 W ramach siódmego etapu sporządzono statysyki opisowe w tabeli dla zmiennych ilościowych. Obliczono między innymi: średnią, odchylenie standardowe, kwantyle, wariancję, współczynnik zmiennośći, skośność oraz kurtozę. Ponad to obliczono korelacje pomiędzy zmiennymi oraz sporządzono macierz,aby łatwiej zobrazować wyniki.
 
@@ -433,7 +433,7 @@ ggbetweenstats(
   title = "Porównianie BMI w zależności płci"
 )
 
-# p-value < 0,05 oznacza, iż są statystycznie istotne różnic między płcią a BMI.
+# p-value < 0,05. Odrzucamy hipotezę zerową, a więc są statystycznie istotne różnice między płcią a BMI.
 
 
 ```
