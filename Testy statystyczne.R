@@ -13,3 +13,10 @@ ggscatterstats (
   x= 'Session_Duration (hours)',
   y= BMI
 )
+
+#Zależność pomiędzy wiekiem a częstotliwością ćwiczeń
+ggbetweenstats (
+  data= silownia,
+  x= 'Workout_Frequency (days/week)',
+  y= Age
+)
