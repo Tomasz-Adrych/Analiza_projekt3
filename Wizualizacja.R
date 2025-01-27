@@ -30,6 +30,25 @@ ggplot(silownia, aes(x = Workout_Frequency, y = Experience_Level, color = as.fac
 
 
 
+# Obliczanie średnich AVG_BPM dla każdego typu treningu
+avg_bpm_summary <- silownia %>%
+  group_by(Workout_Type) %>%
+  summarise(mean_bpm = mean(Avg_BPM, na.rm = TRUE))
+
+#Wykres zależności AVG_BPM od rodzaju treningu
+ggplot(silownia, aes(x = Workout_Type, y = Avg_BPM, fill = Workout_Type)) +
+  geom_violin(alpha = 0.7) +  
+  geom_point(data = avg_bpm_summary, aes(x = Workout_Type, y = mean_bpm), 
+             color = "red", size = 3) +  # Średnie jako czerwone punkty
+  geom_line(data = avg_bpm_summary, aes(x = Workout_Type, y = mean_bpm, group = 1), 
+            color = "red", linetype = "dashed", linewidth = 1) +  # Linia łącząca średnie
+  labs(
+    title = "Rozkład AVG_BPM w zależności od rodzaju treningu",
+    x = "Rodzaj treningu",
+    y = "AVG_BPM"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
 
 
 
